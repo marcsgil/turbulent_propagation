@@ -1,0 +1,16 @@
+[project]
+name = "turbulent-propagation"
+version = "0.1.0"
+description = "A GPU-accelerated library for simulating wave propagation through the turbulent atmosphere."
+readme = "README.md"
+authors = [
+    { name = "Marcos Gil", email = "marcosgildeoliveira@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "jax>=0.7.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.8.2,<0.9.0"]
+build-backend = "uv_build"
