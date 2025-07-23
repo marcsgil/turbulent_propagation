@@ -1,0 +1,11 @@
+[project]
+name = "examples"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "matplotlib>=3.10.3",
+    "turbulent-propagation",
+]
+
+[tool.uv.sources]
+turbulent-propagation = { workspace = true }
