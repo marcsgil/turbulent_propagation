@@ -49,10 +49,10 @@ def calculate_spectrum(
     *args,
     **kwargs,
 ) -> Array:
-    qs = jnp.meshgrid(qxs, qys)
+    QXs, QYs = jnp.meshgrid(qxs, qys)
     dqxs = qxs[1] - qxs[0]
     dqys = qys[1] - qys[0]
-    return spectrum(qs, *args, **kwargs) * dqxs * dqys
+    return spectrum(QXs, QYs, *args, **kwargs) * dqxs * dqys
 
 
 def calculate_fft_spectrum(
@@ -130,14 +130,30 @@ def single_subharmonic_phase_screen(
     *args,
     **kwargs,
 ) -> Array:
-    random_numbers = random.normal(key, (nsamples, Ny, Nx), dtype=jnp.complex64)
-    spectrum_value = calculate_subharmonic_spectrum(
-        spectrum, Nx, Ny, dx, dy, p, *args, **kwargs
+    dqx = 2 * jnp.pi / (3**p * Nx * dx)
+    dqy = 2 * jnp.pi / (3**p * Ny * dy)
+
+    qxs = (jnp.arange(-3, 3) + 0.5) * dqx
+    qys = (jnp.arange(-3, 3) + 0.5) * dqy
+
+    spectrum_value = calculate_spectrum(spectrum, qxs, qys, *args, **kwargs)
+
+    xs = jnp.arange(Nx) * dx
+    ys = jnp.arange(Ny) * dy
+
+    Qxs, Qys, Xs, Ys = jnp.meshgrid(qxs, qys, xs, ys, sparse=True)
+
+    random_numbers = random.normal(
+        key, (nsamples, len(qys), len(qxs)), dtype=jnp.complex64
     )
 
-    
+    array1 = (random_numbers * jnp.sqrt(2 * spectrum_value)).reshape(
+        nsamples, len(qys) * len(qxs)
+    )
 
-    return jnp.fft.fft2(random_numbers * jnp.sqrt(2 * spectrum_value)).real
+    array2 = jnp.exp(1j * (Qxs * Xs + Qys * Ys)).reshape(len(qys) * len(qxs), Nx * Ny)
+
+    return (array1 @ array2).reshape(nsamples, Ny, Nx).real
 
 
 def subharmonic_phase_screen(
@@ -152,19 +168,8 @@ def subharmonic_phase_screen(
     *args,
     **kwargs,
 ) -> Array:
-    result = single_subharmonic_phase_screen(
-        spectrum,
-        Nx,
-        Ny,
-        dx,
-        dy,
-        p=1,
-        nsamples=nsamples,
-        key=key,
-        *args,
-        **kwargs,
-    )
-    for p in range(2, Np):
+    result = jnp.zeros((nsamples, Ny, Nx), dtype=jnp.float32)
+    for p in range(1, Np + 1):
         key, subkey = random.split(key)
         result += single_subharmonic_phase_screen(
             spectrum,
@@ -191,10 +196,24 @@ def expected_single_subharmonic_correlation_function(
     *args,
     **kwargs,
 ) -> Array:
-    spectrum_value = calculate_subharmonic_spectrum(
-        spectrum, Nx, Ny, dx, dy, p, *args, **kwargs
-    )
-    return jnp.fft.fft2(spectrum_value).real
+    dqx = 2 * jnp.pi / (3**p * Nx * dx)
+    dqy = 2 * jnp.pi / (3**p * Ny * dy)
+
+    qxs = (jnp.arange(-3, 3) + 0.5) * dqx
+    qys = (jnp.arange(-3, 3) + 0.5) * dqy
+
+    spectrum_value = calculate_spectrum(spectrum, qxs, qys, *args, **kwargs)
+
+    xs = jnp.arange(Nx) * dx
+    ys = jnp.arange(Ny) * dy
+
+    Qxs, Qys, Xs, Ys = jnp.meshgrid(qxs, qys, xs, ys, sparse=True)
+
+    array1 = spectrum_value.reshape(len(qys) * len(qxs))
+
+    array2 = jnp.exp(1j * (Qxs * Xs + Qys * Ys)).reshape(len(qys) * len(qxs), Nx * Ny)
+
+    return (array1 @ array2).reshape(Ny, Nx).real
 
 
 def expected_subharmonic_correlation_function(
@@ -207,10 +226,8 @@ def expected_subharmonic_correlation_function(
     *args,
     **kwargs,
 ) -> Array:
-    result = expected_single_subharmonic_correlation_function(
-        spectrum, Nx, Ny, dx, dy, 1, *args, **kwargs
-    )
-    for p in range(2, Np):
+    result = jnp.zeros((Ny, Nx), dtype=jnp.float32)
+    for p in range(1, Np + 1):
         result += expected_single_subharmonic_correlation_function(
             spectrum, Nx, Ny, dx, dy, p, *args, **kwargs
         )
