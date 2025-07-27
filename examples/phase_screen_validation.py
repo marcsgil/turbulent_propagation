@@ -1,8 +1,6 @@
 import matplotlib.pyplot as plt
 from turbulent_propagation.spectra import von_karman_spectrum
-from turbulent_propagation.phase_screens import (
-    statistical_structure_function,
-    phase_screen,
+from turbulent_propagation.expected_correlation_functions import (
     expected_correlation_function,
 )
 
@@ -56,19 +54,8 @@ L = 2
 d = L / N
 r0 = 0.1
 L0 = 10
-Np = 1
+Np = 3
 
-screen = phase_screen(
-    spectrum=von_karman_spectrum,
-    Nx=N,
-    Ny=N,
-    dx=d,
-    dy=d,
-    Np=Np,
-    nsamples=1000,
-    r0=r0,
-    L0=L0,
-)
 
 expected_correlation_function = expected_correlation_function(
     spectrum=von_karman_spectrum,
@@ -87,12 +74,7 @@ expected_structure_function = 2 * (
 
 rs = jnp.arange(N // 2) * d
 
-factor = 0.1
-
 plt.plot(rs, expected_structure_function, label="Expected Structure Function")
-plt.plot(
-    rs, statistical_structure_function(screen), label="Statistical Structure Function"
-)
 plt.plot(
     rs, von_karman_structure_function(rs, r0, L0), label="Von Karman Structure Function"
 )

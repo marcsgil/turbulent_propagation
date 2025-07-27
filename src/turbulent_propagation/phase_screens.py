@@ -86,19 +86,6 @@ def fourier_phase_screen(
     return jnp.fft.fft2(random_numbers * jnp.sqrt(2 * spectrum_value)).real
 
 
-def expected_fourier_correlation_function(
-    spectrum: Callable,
-    Nx: int,
-    Ny: int,
-    dx: float,
-    dy: float,
-    *args,
-    **kwargs,
-) -> Array:
-    spectrum_value = calculate_fft_spectrum(spectrum, Nx, Ny, dx, dy, *args, **kwargs)
-    return jnp.fft.fft2(spectrum_value).real
-
-
 def calculate_subharmonic_spectrum(
     spectrum: Callable,
     Nx: int,
@@ -186,54 +173,6 @@ def subharmonic_phase_screen(
     return result
 
 
-def expected_single_subharmonic_correlation_function(
-    spectrum: Callable,
-    Nx: int,
-    Ny: int,
-    dx: float,
-    dy: float,
-    p: int,
-    *args,
-    **kwargs,
-) -> Array:
-    dqx = 2 * jnp.pi / (3**p * Nx * dx)
-    dqy = 2 * jnp.pi / (3**p * Ny * dy)
-
-    qxs = (jnp.arange(-3, 3) + 0.5) * dqx
-    qys = (jnp.arange(-3, 3) + 0.5) * dqy
-
-    spectrum_value = calculate_spectrum(spectrum, qxs, qys, *args, **kwargs)
-
-    xs = jnp.arange(Nx) * dx
-    ys = jnp.arange(Ny) * dy
-
-    Qxs, Qys, Xs, Ys = jnp.meshgrid(qxs, qys, xs, ys, sparse=True)
-
-    array1 = spectrum_value.reshape(len(qys) * len(qxs))
-
-    array2 = jnp.exp(1j * (Qxs * Xs + Qys * Ys)).reshape(len(qys) * len(qxs), Nx * Ny)
-
-    return (array1 @ array2).reshape(Ny, Nx).real
-
-
-def expected_subharmonic_correlation_function(
-    spectrum: Callable,
-    Nx: int,
-    Ny: int,
-    dx: float,
-    dy: float,
-    Np: int,
-    *args,
-    **kwargs,
-) -> Array:
-    result = jnp.zeros((Ny, Nx), dtype=jnp.float32)
-    for p in range(1, Np + 1):
-        result += expected_single_subharmonic_correlation_function(
-            spectrum, Nx, Ny, dx, dy, p, *args, **kwargs
-        )
-    return result
-
-
 def phase_screen(
     spectrum: Callable,
     Nx: int,
@@ -251,21 +190,4 @@ def phase_screen(
         spectrum, Nx, Ny, dx, dy, nsamples, key, *args, **kwargs
     ) + subharmonic_phase_screen(
         spectrum, Nx, Ny, dx, dy, Np, nsamples, key=subkey, *args, **kwargs
-    )
-
-
-def expected_correlation_function(
-    spectrum: Callable,
-    Nx: int,
-    Ny: int,
-    dx: float,
-    dy: float,
-    Np: int,
-    *args,
-    **kwargs,
-) -> Array:
-    return expected_fourier_correlation_function(
-        spectrum, Nx, Ny, dx, dy, *args, **kwargs
-    ) + expected_subharmonic_correlation_function(
-        spectrum, Nx, Ny, dx, dy, Np, *args, **kwargs
     )

@@ -9,11 +9,14 @@ Built with JAX for high-performance numerical computing.
 from .phase_screens import (
     statistical_structure_function,
     fourier_phase_screen,
-    expected_fourier_correlation_function,
     phase_screen,
-    expected_correlation_function,
 )
 from .spectra import von_karman_spectrum
+from .expected_correlation_functions import (
+    expected_fourier_correlation_function,
+    expected_single_subharmonic_correlation_function,
+    expected_correlation_function,
+)
 
 # Define what gets imported with "from turbulent_propagation import *"
 __all__ = [
@@ -22,5 +25,6 @@ __all__ = [
     "expected_fourier_correlation_function",
     "phase_screen",
     "expected_correlation_function",
+    "expected_single_subharmonic_correlation_function",
     "von_karman_spectrum",
 ]
