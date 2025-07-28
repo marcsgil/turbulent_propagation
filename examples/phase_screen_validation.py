@@ -59,7 +59,7 @@ L = 2
 d = L / N
 r0 = 0.1
 L0 = 10
-Np = 3
+Np = 0
 
 
 expected_correlation_function = expected_correlation_function(
@@ -84,7 +84,7 @@ screen = phase_screen(
     dx=d,
     dy=d,
     Np=Np,
-    nsamples=100,
+    nsamples=1000,
     key=jax.random.key(42),
     r0=r0,
     L0=L0,
@@ -99,9 +99,9 @@ statistical_structure_function = statistical_structure_function(screen)
 rs = jnp.arange(N // 2) * d
 
 plt.plot(rs, expected_structure_function, label="Expected Structure Function")
-plt.plot(
+""" plt.plot(
     rs, von_karman_structure_function(rs, r0, L0), label="Von Karman Structure Function"
-)
+) """
 plt.plot(rs, statistical_structure_function, label="Statistical Structure Function")
 
 plt.legend()

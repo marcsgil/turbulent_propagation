@@ -75,9 +75,11 @@ def fourier_phase_screen(
     spectrum_value = spectrum_value.at[1, -1].multiply(0.25)
     spectrum_value = spectrum_value.at[-1, -1].multiply(0.25)
 
-    random_numbers = random.normal(key, (nsamples, Ny, Nx), dtype=jnp.complex64)
+    # random_numbers = random.normal(key, (nsamples, Ny, Nx), dtype=jnp.complex64)
+    real_noise = random.normal(key, (nsamples, Ny, Nx))
+    hermitian_noise = jnp.fft.fft2(real_noise, norm="ortho")
 
-    return jnp.fft.fft2(random_numbers * jnp.sqrt(2 * spectrum_value))
+    return jnp.fft.ifft2(hermitian_noise * jnp.sqrt(spectrum_value), norm="forward")
 
 
 @partial(jit, static_argnames=("spectrum", "Nx", "Ny", "Np", "nsamples"))

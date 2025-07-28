@@ -29,6 +29,11 @@ def expected_fourier_correlation_function(
     spectrum_value = spectrum_value.at[0, 1].multiply(0.5)
     spectrum_value = spectrum_value.at[0, -1].multiply(0.5)
 
+    """ In the paper, it is said that the corners are multiplied by 3/4,
+    but I've found that, to match the expected correlation function,
+    they should be multiplied by 1/4.
+    This is probably a mistake in the paper, because the method of
+    Herman and Strugala uses the same 1/4 factor. """
     spectrum_value = spectrum_value.at[1, 1].multiply(0.25)
     spectrum_value = spectrum_value.at[-1, 1].multiply(0.25)
     spectrum_value = spectrum_value.at[1, -1].multiply(0.25)
@@ -48,6 +53,10 @@ def expected_correlation_function(
     *args,
     **kwargs,
 ) -> Array:
+    """
+    Calculate the expected correlation function for a given spectrum following the method
+    by Johansson & Gavel (1994) on "Simulation of stellar speckle imaging".
+    """
     output = expected_fourier_correlation_function(
         spectrum, Nx, Ny, dx, dy, *args, **kwargs
     )
