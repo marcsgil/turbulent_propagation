@@ -3,9 +3,14 @@ from turbulent_propagation.spectra import von_karman_spectrum
 from turbulent_propagation.expected_correlation_functions import (
     expected_correlation_function,
 )
+from turbulent_propagation.phase_screens import (
+    phase_screen,
+    statistical_structure_function,
+)
 
 import jax.numpy as jnp
 from scipy.special import gamma, kv
+import jax
 
 
 def von_karman_structure_function(r, r0, L0):
@@ -72,12 +77,32 @@ expected_structure_function = 2 * (
     expected_correlation_function[0, 0] - expected_correlation_function[0, : N // 2]
 )
 
+screen = phase_screen(
+    spectrum=von_karman_spectrum,
+    Nx=N,
+    Ny=N,
+    dx=d,
+    dy=d,
+    Np=Np,
+    nsamples=100,
+    key=jax.random.key(42),
+    r0=r0,
+    L0=L0,
+)
+
+plt.imshow(screen[2])
+plt.show()
+plt.close()
+
+statistical_structure_function = statistical_structure_function(screen)
+
 rs = jnp.arange(N // 2) * d
 
 plt.plot(rs, expected_structure_function, label="Expected Structure Function")
 plt.plot(
     rs, von_karman_structure_function(rs, r0, L0), label="Von Karman Structure Function"
 )
+plt.plot(rs, statistical_structure_function, label="Statistical Structure Function")
 
 plt.legend()
 plt.show()
