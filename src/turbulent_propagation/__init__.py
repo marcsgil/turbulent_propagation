@@ -14,7 +14,6 @@ from .phase_screens import (
 from .spectra import von_karman_spectrum
 from .expected_correlation_functions import (
     expected_fourier_correlation_function,
-    expected_single_subharmonic_correlation_function,
     expected_correlation_function,
 )
 
@@ -25,6 +24,5 @@ __all__ = [
     "expected_fourier_correlation_function",
     "phase_screen",
     "expected_correlation_function",
-    "expected_single_subharmonic_correlation_function",
     "von_karman_spectrum",
 ]
