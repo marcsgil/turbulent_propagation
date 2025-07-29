@@ -43,6 +43,11 @@ def statistical_structure_function(data: Array) -> Array:
         return result.mean(axis=range(0, data.ndim - 1))
 
 
+def hermitian_normals(*args, axes=(-2, -1), **kwargs):
+    real_noise = random.normal(*args, **kwargs, dtype=jnp.float32)
+    return jnp.fft.fftn(real_noise, norm="ortho", axes=axes)
+
+
 def fourier_phase_screen(
     spectrum: Callable,
     Nx: int,
@@ -75,11 +80,9 @@ def fourier_phase_screen(
     spectrum_value = spectrum_value.at[1, -1].multiply(0.25)
     spectrum_value = spectrum_value.at[-1, -1].multiply(0.25)
 
-    # random_numbers = random.normal(key, (nsamples, Ny, Nx), dtype=jnp.complex64)
-    real_noise = random.normal(key, (nsamples, Ny, Nx))
-    hermitian_noise = jnp.fft.fft2(real_noise, norm="ortho")
+    random_numbers = hermitian_normals(key, shape=(nsamples, Ny, Nx))
 
-    return jnp.fft.ifft2(hermitian_noise * jnp.sqrt(spectrum_value), norm="forward")
+    return jnp.fft.ifft2(random_numbers * jnp.sqrt(spectrum_value), norm="forward")
 
 
 @partial(jit, static_argnames=("spectrum", "Nx", "Ny", "Np", "nsamples"))
@@ -104,8 +107,12 @@ def phase_screen(
     ys = jnp.arange(Ny) * dy
     Xs, Ys = jnp.meshgrid(xs, ys, sparse=True)
 
-    random_numbers = random.normal(subkey, (nsamples, 32, Np), dtype=output.dtype)
-    counter = 0
+    random_numbers = random.normal(
+        subkey, shape=(nsamples, Np, 6, 3, 1, 1), dtype=jnp.complex64
+    )
+    random_numbers = jnp.concat(
+        (random_numbers, jnp.flip(random_numbers, axis=(2, 3)).conj()), axis=3
+    )
 
     for i in range(-3, 3):
         for j in range(-3, 3):
@@ -118,10 +125,9 @@ def phase_screen(
                 qy = (j + 0.5) * dqy
                 spectrum_val = spectrum(qx, qy, *args, **kwargs) * dqx * dqy
                 output += (
-                    random_numbers[:, counter, p].reshape((nsamples, 1, 1))
+                    random_numbers[:, p, i, j, :, :]
                     * jnp.sqrt(spectrum_val)
                     * jnp.exp(1j * (qx * Xs + qy * Ys))
                 )
-                counter += 1
 
     return output.real
