@@ -15,10 +15,13 @@ from .expected_correlation_functions import (
     expected_correlation_function,
 )
 
+from .free_propagation import angular_spectrum_propagation
+
 # Define what gets imported with "from turbulent_propagation import *"
 __all__ = [
     "statistical_structure_function",
     "phase_screen",
     "expected_correlation_function",
     "von_karman_spectrum",
+    "angular_spectrum_propagation",
 ]
