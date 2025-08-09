@@ -24,7 +24,7 @@ from .free_propagation import angular_spectrum_propagation
 
 from .turbulent_propagation import turbulent_propagation
 
-from .utils import atmospheric_coherence_length
+from .utils import atmospheric_coherence_length, rytov_variance
 
 # Define what gets imported with "from turbulent_propagation import *"
 __all__ = [
@@ -38,4 +38,5 @@ __all__ = [
     "angular_spectrum_propagation",
     "turbulent_propagation",
     "atmospheric_coherence_length",
+    "rytov_variance",
 ]
