@@ -100,9 +100,9 @@ rs = jnp.arange(N // 2) * d
 
 plt.plot(rs, expected_structure_function, label="Expected Structure Function")
 plt.plot(
-    rs, von_karman_structure_function(rs, r0, L0), label="Von Karman Structure Function"
+    rs, von_karman_structure_function(rs, r0, L0), label="Von Karman Structure Function", linestyle="--"
 )
-plt.plot(rs, statistical_structure_function, label="Statistical Structure Function")
+#plt.plot(rs, statistical_structure_function, label="Statistical Structure Function")
 
 plt.legend()
 plt.show()

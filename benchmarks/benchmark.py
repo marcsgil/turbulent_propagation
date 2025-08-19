@@ -10,7 +10,7 @@ import jax.numpy as jnp
 from jax import random
 
 N = 256
-nsamples = 100
+nsamples = 128
 u = jnp.zeros((nsamples, N, N), dtype=complex)
 key = random.key(42)
 """
