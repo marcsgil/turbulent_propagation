@@ -11,6 +11,11 @@ dependencies = [
     "jax>=0.7.0",
 ]
 
+[project.optional-dependencies]
+cuda12 = [
+    "jax[cuda12]>=0.7.0",
+]
+
 [build-system]
 requires = ["uv_build>=0.8.2,<0.9.0"]
 build-backend = "uv_build"
@@ -18,6 +23,7 @@ build-backend = "uv_build"
 [tool.uv.workspace]
 members = [
     "examples",
+    ".",
     ".",
 ]
 

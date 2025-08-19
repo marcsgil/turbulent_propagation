@@ -6,7 +6,8 @@ dependencies = [
     "ipykernel>=6.30.0",
     "matplotlib>=3.10.3",
     "pyqt6>=6.9.1",
-    "turbulent-propagation",
+    "tqdm>=4.67.1",
+    "turbulent-propagation[cuda12]",
 ]
 
 [tool.uv.sources]
