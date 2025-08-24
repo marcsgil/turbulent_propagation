@@ -4,45 +4,6 @@ from typing import Callable
 from functools import partial
 
 
-def statistical_structure_function1d(data: Array) -> Array:
-    """
-    Computes the statistical structure function for a 1D array.
-
-    Parameters:
-    data (Array): Input 1D array.
-
-    Returns:
-    Array: The computed statistical structure function.
-    """
-    N = len(data)
-    return (data[: N // 2] - data[0]) ** 2
-
-
-def statistical_structure_function(data: Array) -> Array:
-    """
-    Computes the statistical structure function of the input data.
-
-    For 1D arrays: returns (data[0:N//2] - data[0])^2
-    For N-D arrays: computes the structure function along the first axis
-    and averages over all other dimensions.
-
-    Parameters:
-    data (Array): Input data array.
-
-    Returns:
-    Array: The computed statistical structure function.
-    """
-    if data.ndim == 1:
-        return statistical_structure_function1d(data)
-    else:
-        # N-D case: apply structure function along first axis (axis=0)
-        result = jnp.apply_along_axis(
-            statistical_structure_function1d, axis=-1, arr=data
-        )
-        # Average over all axes except the structure function axis
-        return result.mean(axis=range(0, data.ndim - 1))
-
-
 def hermitian_normals(*args, axes=(-2, -1), **kwargs):
     real_noise = random.normal(*args, **kwargs, dtype=jnp.float32)
     return jnp.fft.fftn(real_noise, norm="ortho", axes=axes)

@@ -1,16 +1,48 @@
 import matplotlib.pyplot as plt
-from turbulent_propagation.spectra import von_karman_spectrum
-from turbulent_propagation.expected_correlation_functions import (
-    expected_correlation_function,
-)
-from turbulent_propagation.phase_screens import (
-    phase_screen,
-    statistical_structure_function,
-)
-
+from turbulent_propagation import von_karman_spectrum, phase_screen
 import jax.numpy as jnp
 from scipy.special import gamma, kv
 import jax
+from jax import Array
+
+
+def statistical_structure_function1d(data: Array) -> Array:
+    """
+    Computes the statistical structure function for a 1D array.
+
+    Parameters:
+    data (Array): Input 1D array.
+
+    Returns:
+    Array: The computed statistical structure function.
+    """
+    N = len(data)
+    return (data[: N // 2] - data[0]) ** 2
+
+
+def statistical_structure_function(data: Array) -> Array:
+    """
+    Computes the statistical structure function of the input data.
+
+    For 1D arrays: returns (data[0:N//2] - data[0])^2
+    For N-D arrays: computes the structure function along the first axis
+    and averages over all other dimensions.
+
+    Parameters:
+    data (Array): Input data array.
+
+    Returns:
+    Array: The computed statistical structure function.
+    """
+    if data.ndim == 1:
+        return statistical_structure_function1d(data)
+    else:
+        # N-D case: apply structure function along first axis (axis=0)
+        result = jnp.apply_along_axis(
+            statistical_structure_function1d, axis=-1, arr=data
+        )
+        # Average over all axes except the structure function axis
+        return result.mean(axis=range(0, data.ndim - 1))
 
 
 def von_karman_structure_function(r, r0, L0):
@@ -61,22 +93,6 @@ r0 = 0.1
 L0 = 10
 Np = 3
 
-
-expected_correlation_function = expected_correlation_function(
-    spectrum=von_karman_spectrum,
-    Nx=N,
-    Ny=N,
-    dx=d,
-    dy=d,
-    Np=Np,
-    r0=r0,
-    L0=L0,
-)
-
-expected_structure_function = 2 * (
-    expected_correlation_function[0, 0] - expected_correlation_function[0, : N // 2]
-)
-
 screen = phase_screen(
     spectrum=von_karman_spectrum,
     Nx=N,
@@ -94,15 +110,17 @@ plt.imshow(screen[2])
 plt.show()
 plt.close()
 
-statistical_structure_function = statistical_structure_function(screen)
+statistical_structure_function_val = statistical_structure_function(screen)
 
 rs = jnp.arange(N // 2) * d
 
-plt.plot(rs, expected_structure_function, label="Expected Structure Function")
 plt.plot(
-    rs, von_karman_structure_function(rs, r0, L0), label="Von Karman Structure Function", linestyle="--"
+    rs,
+    von_karman_structure_function(rs, r0, L0),
+    label="Von Karman Structure Function",
+    linestyle="--",
 )
-#plt.plot(rs, statistical_structure_function, label="Statistical Structure Function")
+plt.plot(rs, statistical_structure_function_val, label="Statistical Structure Function")
 
 plt.legend()
 plt.show()
