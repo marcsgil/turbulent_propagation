@@ -41,7 +41,7 @@ def modified_von_karman_spectrum(
 
 
 def von_karman_spectrum(
-    qx: ArrayLike, qy: ArrayLike, r0: float, L0: float
+    qx: ArrayLike, qy: ArrayLike, Cn2: float, L0: float
 ) -> ArrayLike:
     """
     Calculate the von Karman spectrum for given wavevector components.
@@ -51,7 +51,7 @@ def von_karman_spectrum(
     Parameters:
         qx (ArrayLike): Wavenumber vector (x-direction) from meshgrid.
         qy (ArrayLike): Wavenumber vector (y-direction) from meshgrid.
-        r0 (float): Atmospheric coherence length.
+        Cn2 (float): Refractive index structure function
         L0 (float): Outer scale of turbulence.
 
     Returns:
@@ -60,7 +60,7 @@ def von_karman_spectrum(
     q_squared = qx**2 + qy**2
     q_0_squared = (2 * jnp.pi / L0) ** 2
 
-    return 0.49 / r0 ** (5 / 3) / (q_squared + q_0_squared) ** (11 / 6)
+    return 0.033 * Cn2 / (q_squared + q_0_squared) ** (11 / 6)
 
 
 def kolmogorov_spectrum(qx: ArrayLike, qy: ArrayLike, r0: float) -> ArrayLike:
