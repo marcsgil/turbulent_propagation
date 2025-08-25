@@ -10,7 +10,7 @@ from jax.typing import ArrayLike
 
 
 def modified_von_karman_spectrum(
-    qx: ArrayLike, qy: ArrayLike, r0: float, L0: float, l0: float
+    qx: ArrayLike, qy: ArrayLike, Cn2: float, L0: float, l0: float
 ) -> ArrayLike:
     """
     Calculate the modified von Karman spectrum for given wavevector components.
@@ -29,12 +29,12 @@ def modified_von_karman_spectrum(
         ArrayLike: The calculated modified von Karman spectrum.
     """
     q_squared = qx**2 + qy**2
-    q_m_squared = (5.92 / l0) ** 2
+    q_m_squared = (jnp.float32(5.92) / l0) ** 2
     q_0_squared = (2 * jnp.pi / L0) ** 2
 
     return (
-        0.49
-        / r0 ** (5 / 3)
+        0.033
+        * Cn2
         * jnp.exp(-q_squared / q_m_squared)
         / (q_squared + q_0_squared) ** (11 / 6)
     )
@@ -57,13 +57,10 @@ def von_karman_spectrum(
     Returns:
         ArrayLike: The calculated von Karman spectrum.
     """
-    q_squared = qx**2 + qy**2
-    q_0_squared = (2 * jnp.pi / L0) ** 2
-
-    return 0.033 * Cn2 / (q_squared + q_0_squared) ** (11 / 6)
+    return modified_von_karman_spectrum(qx, qy, Cn2, L0, l0=0)
 
 
-def kolmogorov_spectrum(qx: ArrayLike, qy: ArrayLike, r0: float) -> ArrayLike:
+def kolmogorov_spectrum(qx: ArrayLike, qy: ArrayLike, Cn2: float) -> ArrayLike:
     """
     Calculate the Kolmogorov spectrum for given wavevector components.
 
@@ -77,11 +74,11 @@ def kolmogorov_spectrum(qx: ArrayLike, qy: ArrayLike, r0: float) -> ArrayLike:
     Returns:
         ArrayLike: The calculated Kolmogorov spectrum.
     """
-    return 0.49 / r0 ** (5 / 3) / (qx**2 + qy**2) ** (11 / 6)
+    return von_karman_spectrum(qx, qy, Cn2, L0=jnp.inf)
 
 
 def hill_andrews_spectrum(
-    qx: ArrayLike, qy: ArrayLike, r0: float, L0: float, l0: float
+    qx: ArrayLike, qy: ArrayLike, Cn2: float, L0: float, l0: float
 ) -> ArrayLike:
     """
     Calculate the Hill-Andrews spectrum for given wavevector components.
@@ -93,7 +90,7 @@ def hill_andrews_spectrum(
     Parameters:
         qx (ArrayLike): Wavenumber vector (x-direction) from meshgrid.
         qy (ArrayLike): Wavenumber vector (y-direction) from meshgrid.
-        r0 (float): Atmospheric coherence length.
+        Cn2 (float): Refractive index structure constant.
         L0 (float): Outer scale of turbulence.
         l0 (float): Inner scale of turbulence.
 
@@ -105,8 +102,8 @@ def hill_andrews_spectrum(
     q0_squared = (2 * jnp.pi / L0) ** 2
 
     return (
-        0.49
-        / r0 ** (5 / 3)
+        0.033
+        * Cn2
         * jnp.exp(-q_squared / ql_squared)
         / (q_squared + q0_squared) ** (11 / 6)
         * (

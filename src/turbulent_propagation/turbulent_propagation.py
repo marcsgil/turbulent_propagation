@@ -13,7 +13,7 @@ def turbulent_propagation(
     u: Array,
     dx: float,
     dy: float,
-    dz: float,
+    z: float,
     wavelength: float,
     magnification: float,
     spectrum: Callable,
@@ -27,13 +27,13 @@ def turbulent_propagation(
     Ny = u.shape[-2]
 
     m = magnification ** (1 / 2 / nsteps)
-    L = dz / nsteps / 2
+    dz = z / nsteps
 
     keys = random.split(key, nsteps)
 
     for key in keys:
-        u = angular_spectrum_propagation(u, dx, dy, L, wavelength, m)
-        phase_screens = phase_screen(
+        u = angular_spectrum_propagation(u, dx, dy, dz / 2, wavelength, m)
+        n = phase_screen(
             spectrum,
             Nx,
             Ny,
@@ -45,7 +45,7 @@ def turbulent_propagation(
             *args,
             **kwargs,
         )
-        u = u * jnp.exp(1j * phase_screens)
-        u = angular_spectrum_propagation(u, dx, dy, L, wavelength, m)
+        u = u * jnp.exp(1j * jnp.sqrt(8 * jnp.pi**3 * dz / wavelength**2) * n)
+        u = angular_spectrum_propagation(u, dx, dy, dz / 2, wavelength, m)
 
     return u

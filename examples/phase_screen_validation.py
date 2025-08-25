@@ -95,34 +95,24 @@ def von_karman_structure_function(r, z, Cn2, L0, wavelength):
 N = 256
 L = 2
 d = L / N
-r0 = 0.1
 L0 = 10
 Np = 3
 
 Cn2 = 1e-14
 wavelength = 633e-9
 z = 100
-print(atmospheric_coherence_length(z, Cn2, wavelength))
 
-k = 2 * jnp.pi / wavelength
-
-screen = (
-    2
-    * jnp.pi
-    * k**2
-    * z
-    * phase_screen(
-        spectrum=von_karman_spectrum,
-        Nx=N,
-        Ny=N,
-        dx=d,
-        dy=d,
-        Np=Np,
-        nsamples=1000,
-        key=jax.random.key(42),
-        Cn2=Cn2,
-        L0=L0,
-    )
+screen = jnp.sqrt(8 * jnp.pi**3 * z / wavelength**2) * phase_screen(
+    spectrum=von_karman_spectrum,
+    Nx=N,
+    Ny=N,
+    dx=d,
+    dy=d,
+    Np=Np,
+    nsamples=1000,
+    key=jax.random.key(42),
+    Cn2=Cn2,
+    L0=L0,
 )
 
 plt.imshow(screen[2])
@@ -139,7 +129,7 @@ plt.plot(
     label="Von Karman Structure Function",
     linestyle="--",
 )
-#plt.plot(rs, statistical_structure_function_val, label="Statistical Structure Function")
+plt.plot(rs, statistical_structure_function_val, label="Statistical Structure Function")
 
 plt.legend()
 plt.show()
